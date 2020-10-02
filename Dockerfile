@@ -1,4 +1,4 @@
-FROM python:3.8.5-buster
+FROM python:3.8.5-slim-buster
 LABEL maintainer="Ben Hardill hardillb@gmail.com"
 
 RUN \
