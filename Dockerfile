@@ -2,7 +2,7 @@ FROM python:3.8.5-slim-buster
 LABEL maintainer="Ben Hardill hardillb@gmail.com"
 
 RUN \
-  apt-get update && apt-get install -yqq wget gnupg libdbus-1-dev build-essential && \
+  apt-get update && apt-get install -yqq wget gnupg libdbus-1-dev libglib2.0-dev build-essential && \
   echo "deb https://deb.nodesource.com/node_12.x buster main" > /etc/apt/sources.list.d/nodesource.list && \
   wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
   apt-get update && \
