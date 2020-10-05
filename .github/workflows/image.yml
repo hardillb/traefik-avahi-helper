@@ -1,0 +1,21 @@
+name: build images
+on:
+  push:
+    branches: master
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-build@v1
+        with:
+          version: latest
+      - name: build
+        run: |
+        docker buildx build \
+          --tag hardillb/traefik-avahi-helper:latest \
+          --platform linux/amd64,linux/arm/v7,linux/arm64 . 
