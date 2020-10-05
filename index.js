@@ -19,10 +19,8 @@ docker.listContainers()
       keys.forEach(key =>{
         if (re.test(key)) {
           var host = cont.Labels[key].match(re2)[1]
-	  //console.log(cont.Labels[key])
-          //console.log(host)
           cnames.push(host)
-	}
+  }
       })
     }
   }
@@ -37,10 +35,10 @@ docker.listContainers()
     }
   })
   nodemon.on('start', function(){
-    console.log("starting foo.py")
+    console.log("starting cname.py")
   })
   .on('restart', function(files){
-    console.log("restarting foo.py with " + files)
+    console.log("restarting cname.py with " + files)
   })
 })
 .then(() => {
@@ -64,10 +62,10 @@ docker.listContainers()
         keys.forEach(key => {
           if (re.test(key)) {
             var host = eventJSON.Actor.Attributes[key].match(re2)[1]
-	    var index = cnames.indexOf(host)
+            var index = cnames.indexOf(host)
             if (index != -2) {
               cnames.splice(index,1)
-	    }
+            }
             fs.writeFile("cnames",cnames.join('\n'), 'utf8', err => {})
           }
         }) 
