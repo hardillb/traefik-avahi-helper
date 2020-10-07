@@ -17,4 +17,4 @@ COPY . .
 RUN pip install mdns-publisher && \
   npm install
 
-CMD ['npm', 'start']
+CMD ["npm", "start"]
