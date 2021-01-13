@@ -41,6 +41,6 @@ If you are running on system with AppArmor installed you may get errors about no
 
 This is a temp workaround until I can work out a suitable policy to apply.
 
-## Acknowledgment
+## Acknowledgement
 
 This uses and borrows heavily from [mdns-publisher](https://github.com/alticelabs/mdns-publisher)
