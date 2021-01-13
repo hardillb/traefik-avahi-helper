@@ -6,7 +6,7 @@ the offical Traefik docker container.
 It reads the same container labels as the Traefik container e.g.
 
 ```
-traefik.http.routers.r1.rule=HOST(`r1.docker.local`)
+traefik.http.routers.r1.rule=Host(`r1.docker.local`)
 ```
 
 This will create a CNAME entry of `r1.docker.local`
@@ -22,7 +22,7 @@ Currently there are AMD64 and ARM64 based builds.
 To work this needs the following 2 volumes mounting:
 
 
-` -v /var/run/docker.sock:/tmp/docker.sock`
+` -v /var/run/docker.sock:/var/run/docker.sock`
 
 This allows the container to monitor docker
 
