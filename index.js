@@ -22,9 +22,6 @@ docker.listContainers()
             var host = rule.slice(6,-2)
             cnames.push(host)
           })
-          // && re2.test(cont.Labels[key])) {
-          //var host = cont.Labels[key].match(re2)
-          //cnames.push(host)
         }
       })
     }
