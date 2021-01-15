@@ -5,7 +5,8 @@ const nodemon = require('nodemon')
 const docker = new Docker({socketPath: "/var/run/docker.sock"});
 
 const re = /traefik\.http\.routers\.(.*)\.rule/
-const re2 = /H(OST|ost)\(\`(.*)\`\)/
+const re2 = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
+const re3 = /`(.*?\.local)`/g
 
 const cnames = [];
 
@@ -18,9 +19,19 @@ docker.listContainers()
       var keys = Object.keys(cont.Labels)
       keys.forEach(key =>{
         if (re.test(key) && re2.test(cont.Labels[key])) {
-          var host = cont.Labels[key].match(re2)[2]
-          cnames.push(host)
-  }
+          re2.lastIndex=0
+          const matches = cont.Labels[key].matchAll(re2)
+          for (const m of matches){
+            if (m[1].includes(',')){
+              const parts = m[0].matchAll(re3)
+              for (const p of parts) {
+                cnames.push(p[1])
+              }
+            } else {
+              cnames.push(m[1])
+            }
+          }
+        }
       })
     }
   }
