@@ -37,7 +37,7 @@ $ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v /run/dbus/system
 ## AppArmor
 
 If you are running on system with AppArmor installed you may get errors about not being able to send d-bus messages. To fix this add
-`--priviledged` to the command line.
+`--privileged` to the command line.
 
 This is a temp workaround until I can work out a suitable policy to apply.
 
