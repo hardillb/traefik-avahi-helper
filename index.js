@@ -68,6 +68,9 @@ docker.listContainers()
     console.log("SWARM CNAMES:")
     console.log(swarm_cnames)
     })
+    .catch(() => {
+      console.log("Reading Docker Swarm service is failed. Is this node a manager?")
+    })
   .finally(() => {
     const out_cnames  = cnames.concat(swarm_cnames)
     fs.writeFile("cnames",out_cnames.join('\n'), 'utf8', err => {})
