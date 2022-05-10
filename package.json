@@ -1,21 +1,24 @@
 {
   "name": "traefik-avahi-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "dockerode": "^3.2.1",
-    "nodemon": "^2.0.4"
+    "dockerode": "^3.3.1",
+    "nodemon": "^2.0.16"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "traefik",
+    "swarm",
     "avahi"
   ],
   "author": "hardillb@gmail.com",
+  "contributors": [
+    "shiro.hara@gmail.com"
+  ],
   "license": "Apache-2.0"
 }
