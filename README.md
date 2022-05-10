@@ -11,6 +11,8 @@ traefik.http.routers.r1.rule=Host(`r1.docker.local`)
 
 This will create a CNAME entry of `r1.docker.local`
 
+If you use Traefik on the Docker Swarm, you can also use this.
+
 ## Installing
 
 `docker pull hardillb/traefik-avahi-helper`
@@ -29,6 +31,8 @@ This allows the container to monitor docker
 ` -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket`
 
 And this allows the container to send d-bus commands to the host OS's Avahi daemon
+
+**When you use it on the Docker Swarm Environment, you must run the container on the manager node same with the Traefik container.**
 
 ```
 $ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket hardillb/traefik-avahi-helper 

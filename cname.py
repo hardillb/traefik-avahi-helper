@@ -78,14 +78,17 @@ def main():
             signal.signal(signal.SIGQUIT, functools.partial(handle_signals, publisher))
 
             for cname in cnames:
-                status = publisher.publish_cname(cname, True)
+                log.info("Trying to publish '%s'", cname)
+                status = publisher.publish_cname(cname, False)
                 if not status:
                     log.error("failed to publish '%s'", cname)
                     continue
+                else:
+                    log.info("'%s' is published", cname)
             if publisher.count() == len(cnames):
                 log.info("All CNAMEs published")
             else:
-                log.warning("%d of %d published", publisher.count, len(cnames))
+                log.warning("%d of %d published", publisher.count(), len(cnames))
 
         sleep(1)
 
