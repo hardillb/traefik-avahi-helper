@@ -5,10 +5,14 @@ const nodemon = require('nodemon')
 const docker = new Docker({socketPath: "/var/run/docker.sock"});
 
 const re = /traefik\.http\.routers\.(.*)\.rule/
-const re2 = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
-const re3 = /`(.*?\.local)`/g
+const checkRe = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
+const domainRe = /`(?<domain>[^`]*?\.local)`/g
 
-const cnames = [];
+let cnames = [];
+
+const matchDomainCnames = function (domainString) {
+	return [...domainString.matchAll(domainRe)].map(match => match.groups.domain)
+}
 
 docker.listContainers()
 .then( list => {
@@ -18,19 +22,9 @@ docker.listContainers()
       var name = cont.Names[0].substring(1)
       var keys = Object.keys(cont.Labels)
       keys.forEach(key =>{
-        if (re.test(key) && re2.test(cont.Labels[key])) {
-          re2.lastIndex=0
-          const matches = cont.Labels[key].matchAll(re2)
-          for (const m of matches){
-            if (m[1].includes(',')){
-              const parts = m[0].matchAll(re3)
-              for (const p of parts) {
-                cnames.push(p[1])
-              }
-            } else {
-              cnames.push(m[1])
-            }
-          }
+        if (re.test(key) && checkRe.test(cont.Labels[key])) {
+          checkRe.lastIndex=0
+          cnames = cnames.concat(matchDomainCnames(cont.Labels[key]))
         }
       })
     }
@@ -58,32 +52,35 @@ docker.listContainers()
     events.setEncoding('utf8');
     events.on('data',ev => {
       var eventJSON = JSON.parse(ev)
-      // console.log(eventJSON)
-      if (eventJSON.status == "start") {
-        var keys = Object.keys(eventJSON.Actor.Attributes)
-        keys.forEach(key => {
-          if (re.test(key)) {
-            var host = eventJSON.Actor.Attributes[key].match(re2)[1]
-            cnames.push(host)
-            fs.writeFile("cnames",cnames.join('\n'),'utf8', err =>{})
-          }
-        })
-      } else if (eventJSON.status == "stop") {
-        var keys = Object.keys(eventJSON.Actor.Attributes)
-        keys.forEach(key => {
-          if (re.test(key)) {
-            var host = eventJSON.Actor.Attributes[key].match(re2)[1]
-            var index = cnames.indexOf(host)
-            if (index != -2) {
-              cnames.splice(index,1)
-            }
-            fs.writeFile("cnames",cnames.join('\n'), 'utf8', err => {})
-          }
-        }) 
+      if(!['start', 'stop'].includes(eventJSON.status)){
+        return;
       }
+      
+      var keys = Object.keys(eventJSON.Actor.Attributes)
+      keys.forEach(key => {
+        if (!re.test(key)) {
+          return;
+        }
+
+        let hosts = matchDomainCnames(eventJSON.Actor.Attributes[key])
+        if (!hosts.length) {
+          return;
+        }
+
+        if (eventJSON.status === 'start') {
+          cnames = cnames.concat(hosts)
+          console.log('Adding', hosts);
+        } else if (eventJSON.status === 'stop') {
+          cnames = cnames.filter(host => !hosts.includes(host));
+          console.log('Removing', hosts);
+        }
+
+        fs.writeFile("cnames",cnames.join('\n'),'utf8', err =>{})
+      })
     })
   })
   .catch(err => {
     console.log(err)
   })
 })
+
