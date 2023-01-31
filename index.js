@@ -11,7 +11,7 @@ const domainRe = /`(?<domain>[^`]*?\.local)`/g
 let cnames = [];
 
 const matchDomainCnames = function (domainString) {
-	return [...domainString.matchAll(domainRe)].map(match => match.groups.domain)
+  return [...domainString.matchAll(domainRe)].map(match => match.groups.domain)
 }
 
 docker.listContainers()
@@ -55,7 +55,7 @@ docker.listContainers()
       if(!['start', 'stop'].includes(eventJSON.status)){
         return;
       }
-      
+
       var keys = Object.keys(eventJSON.Actor.Attributes)
       keys.forEach(key => {
         if (!re.test(key)) {
