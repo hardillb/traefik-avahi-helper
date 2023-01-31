@@ -4,26 +4,25 @@ const testValues = [
 	"Host(`foo.example.local`) || Host(`bar.example.local`)",
 	"HOST(`foo.example.local`) || ( Host(`baz.example.local`) && Path(`/baz`) )",
 	"Host(`bill.example.local`) || ( Path(`/ben`) && Host(`ben.example.local`) )",
-	"Host( `foo.local`, `bar.local`)"
+	"Host( `foo.local`, `bar.local`)",
+	"Host(`example.com`)",
+	"Host(`foo.example.com`) || Host(`bar.example.local`)",
+	"HOST(`foo.example.local`) || ( Host(`baz.example.com`) && Path(`/baz`) )",
+	"Host(`bill.example.com`) || ( Path(`/ben`) && Host(`ben.example.local`) )",
+	"Host( `foo.com`, `bar.local`)"
 ]
 
-const re = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
-const re2 = /`(.*?\.local)`/g
+const checkRe = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
+const domainRe = /`(?<domain>[^`]*?\.local)`/g
+
+const matchDomainCnames = function (domainString) {
+	return [...domainString.matchAll(domainRe)].map(match => match.groups.domain)
+}
 
 testValues.forEach( l => {
-	if (re.test(l)) {
-		re.lastIndex = 0
-		const matches = [...l.matchAll(re)]
-		for (const match of matches) {
-			if (match[1].includes(',')){
-				const parts = match[0].matchAll(re2)
-				for (const part of parts){
-					console.log(part[1])
-				}
-			} else {
-				console.log(match[1])
-			}
-		}
+	if (checkRe.test(l)) {
+		checkRe.lastIndex = 0
+		console.log(matchDomainCnames(l))
 	} else {
 		console.log("no match - " + l )
 	}
