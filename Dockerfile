@@ -1,14 +1,10 @@
-FROM python:3.8.5-slim-buster
+FROM python:3.9.16-alpine3.17
 LABEL maintainer="Ben Hardill hardillb@gmail.com"
 
 RUN \
-  apt-get update && apt-get install -yqq wget gnupg libdbus-1-dev libglib2.0-dev build-essential && \
-  echo "deb https://deb.nodesource.com/node_12.x buster main" > /etc/apt/sources.list.d/nodesource.list && \
-  wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-  apt-get update && \
-  apt-get install -yqq nodejs && \
+  apk add --update make cmake pkgconfig gcc libc-dev g++ glib-dev linux-headers dbus dbus-dev && \
+  apk add --update 'nodejs<19' 'npm<10' && \
   pip install -U pip && pip install pipenv && \
-  npm i -g npm@^6 && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
