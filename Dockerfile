@@ -1,16 +1,40 @@
-FROM python:3.9.16-alpine3.17
+FROM python:3.10.10-alpine3.17 as base
 LABEL maintainer="Ben Hardill hardillb@gmail.com"
+RUN apk add --no-cache --update  \
+  dbus-libs \
+  'nodejs<19'
 
-RUN \
-  apk add --update autoconf automake make cmake pkgconfig gcc libc-dev g++ glib-dev linux-headers dbus dbus-dev && \
-  apk add --update 'nodejs<19' 'npm<10' && \
-  pip install -U pip && pip install pipenv && \
-  rm -rf /var/lib/apt/lists/*
+# Install dependencies
+FROM base as compile-image
 
 WORKDIR /usr/src/app
 
-COPY . .
-RUN pip install mdns-publisher && \
-  npm install
+RUN apk add --no-cache --update \
+    cmake \
+    g++ \
+    glib-dev \
+    dbus \
+    dbus-dev \
+    glib-dev \
+    'npm<10' && \
+  pip install --upgrade --no-cache-dir pip
 
-CMD ["npm", "start"]
+RUN pip install --user --no-cache-dir mdns-publisher
+
+COPY package.json package-lock.json .
+RUN npm ci --production
+
+# Build application
+FROM base as build-image
+
+WORKDIR /usr/src/app
+
+# app
+COPY cname.py index.js .
+# npm packages
+COPY --from=compile-image /usr/src/app/node_modules node_modules
+# pip packages
+COPY --from=compile-image /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+
+CMD ["node", "index.js"]
