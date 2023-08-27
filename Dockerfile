@@ -16,6 +16,7 @@ RUN apk add --no-cache --update \
     dbus \
     dbus-dev \
     glib-dev \
+    ninja \
     'npm<10' && \
   pip install --upgrade --no-cache-dir pip
 
