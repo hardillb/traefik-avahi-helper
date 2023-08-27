@@ -22,8 +22,8 @@ RUN apk add --no-cache --update \
 
 RUN pip install --user --no-cache-dir mdns-publisher
 
-COPY package.json package-lock.json .
-RUN npm ci --production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 # Build application
 FROM base as build-image
@@ -31,7 +31,7 @@ FROM base as build-image
 WORKDIR /usr/src/app
 
 # app
-COPY cname.py index.js .
+COPY cname.py index.js ./
 # npm packages
 COPY --from=compile-image /usr/src/app/node_modules node_modules
 # pip packages
