@@ -85,7 +85,7 @@ def main():
             if publisher.count() == len(cnames):
                 log.info("All CNAMEs published")
             else:
-                log.warning("%d of %d published", publisher.count, len(cnames))
+                log.warning("%d of %d published", publisher.count(), len(cnames))
 
         sleep(1)
 
