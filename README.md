@@ -34,6 +34,20 @@ And this allows the container to send d-bus commands to the host OS's Avahi daem
 $ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket hardillb/traefik-avahi-helper 
 ```
 
+If you prefer docker compose, here is a minimal one to get you started,
+
+```yaml
+services:
+  traefik-avahi-helper:
+    image: hardillb/traefik-avahi-helper
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
+    restart: unless-stopped
+```
+
 ## AppArmor
 
 If you are running on system with AppArmor installed you may get errors about not being able to send d-bus messages. To fix this add
