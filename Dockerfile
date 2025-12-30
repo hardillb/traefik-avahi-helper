@@ -1,5 +1,5 @@
 # --- Base Image ---
-FROM python:3.10.10-alpine3.17 AS base
+FROM python:3.11-alpine3.18 AS base
 LABEL maintainer="Ben Hardill <hardillb@gmail.com>"
 
 # Systempakete inkl. Build-Tools und dbus-dev
