@@ -1,86 +1,94 @@
-const Docker = require("dockerode")
-const fs = require('fs')
-const nodemon = require('nodemon')
+const Docker = require("dockerode");
+const fs = require("fs");
+const nodemon = require("nodemon");
 
-const docker = new Docker({socketPath: "/var/run/docker.sock"});
+const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
-const re = /traefik\.http\.routers\.(.*)\.rule/
-const checkRe = /Host\(\s*`(.*?\.local)`\s*,*\s*\)/gi
-const domainRe = /`(?<domain>[^`]*?\.local)`/g
+const re = /traefik\.http\.routers\.(.*)\.rule/;
+const domainRe = /`(?<domain>[^`]*?\.local)`/g;
 
 let cnames = [];
 
-const matchDomainCnames = function (domainString) {
-  return [...domainString.matchAll(domainRe)].map(match => match.groups.domain)
-}
+// Hilfsfunktion: Domains extrahieren
+const matchDomainCnames = (domainString) =>
+  [...domainString.matchAll(domainRe)].map((m) => m.groups.domain);
 
+// --- Initial Scan ---
 docker.listContainers()
-.then( list => {
-  for (var i=0; i<list.length; i++) {
-    var cont = list[i]
-    if (cont.Labels["traefik.enable"] === "true") {
-      var name = cont.Names[0].substring(1)
-      var keys = Object.keys(cont.Labels)
-      keys.forEach(key =>{
-        if (re.test(key) && checkRe.test(cont.Labels[key])) {
-          checkRe.lastIndex=0
-          cnames = cnames.concat(matchDomainCnames(cont.Labels[key]))
-        }
-      })
+  .then((list) => {
+    for (const cont of list) {
+      if (cont.Labels["traefik.enable"] !== "true") continue;
+
+      const keys = Object.keys(cont.Labels);
+      keys.forEach((key) => {
+        if (!re.test(key)) return;
+        cnames = cnames.concat(matchDomainCnames(cont.Labels[key]));
+      });
     }
-  }
-  console.log(cnames)
-  fs.writeFile("cnames",cnames.join('\n'), 'utf8', err => {}) 
 
-  nodemon({
-    watch: "cnames",
-    script: "cname.py",
-    execMap: {
-      "py": "python"
-    }
-  })
-  nodemon.on('start', function(){
-    console.log("starting cname.py")
-  })
-  .on('restart', function(files){
-    console.log("restarting cname.py with " + files)
-  })
-})
-.then(() => {
-  docker.getEvents({filters: { event: ["start", "stop"]}})
-  .then( events => {
-    events.setEncoding('utf8');
-    events.on('data',ev => {
-      var eventJSON = JSON.parse(ev)
-      if(!['start', 'stop'].includes(eventJSON.status)){
-        return;
-      }
+    console.log("Initial CNAMEs:", cnames);
+    fs.writeFileSync("cnames", cnames.join("\n"));
 
-      var keys = Object.keys(eventJSON.Actor.Attributes)
-      keys.forEach(key => {
-        if (!re.test(key)) {
-          return;
-        }
-
-        let hosts = matchDomainCnames(eventJSON.Actor.Attributes[key])
-        if (!hosts.length) {
-          return;
-        }
-
-        if (eventJSON.status === 'start') {
-          cnames = cnames.concat(hosts)
-          console.log('Adding', hosts);
-        } else if (eventJSON.status === 'stop') {
-          cnames = cnames.filter(host => !hosts.includes(host));
-          console.log('Removing', hosts);
-        }
-
-        fs.writeFile("cnames",cnames.join('\n'),'utf8', err =>{})
-      })
+    // nodemon starten, überwacht cnames
+    nodemon({
+      watch: "cnames",
+      script: "cname.py",
+      execMap: { py: "python" },
     })
+      .on("start", () => console.log("starting cname.py"))
+      .on("restart", (files) =>
+        console.log("restarting cname.py due to", files)
+      );
   })
-  .catch(err => {
-    console.log(err)
-  })
-})
+  .catch((err) => console.error("Error listing containers:", err));
 
+// --- Live Events ---
+docker
+  .getEvents({ filters: { event: ["start", "stop"] } })
+  .then((stream) => {
+    let buffer = "";
+    stream.setEncoding("utf8");
+
+    stream.on("data", (chunk) => {
+      buffer += chunk;
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // letzte Zeile evtl. unvollständig
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+
+        let eventJSON;
+        try {
+          eventJSON = JSON.parse(line);
+        } catch (err) {
+          console.error("Invalid JSON:", line);
+          continue;
+        }
+
+        if (!["start", "stop"].includes(eventJSON.Action)) continue;
+
+        const attrs = eventJSON.Actor?.Attributes || {};
+        if (attrs["traefik.enable"] !== "true") continue;
+
+        Object.keys(attrs).forEach((key) => {
+          if (!re.test(key)) return;
+
+          const hosts = matchDomainCnames(attrs[key]);
+          if (!hosts.length) return;
+
+          if (eventJSON.Action === "start") {
+            cnames = cnames.concat(hosts);
+            console.log("Adding", hosts);
+          } else if (eventJSON.Action === "stop") {
+            cnames = cnames.filter((h) => !hosts.includes(h));
+            console.log("Removing", hosts);
+          }
+
+          fs.writeFileSync("cnames", cnames.join("\n"));
+        });
+      }
+    });
+
+    stream.on("error", (err) => console.error("Docker events stream error:", err));
+  })
+  .catch((err) => console.error("Failed to get Docker events:", err));
