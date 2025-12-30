@@ -38,14 +38,24 @@ If you prefer docker compose, here is a minimal one to get you started,
 
 ```yaml
 services:
-  traefik-avahi-helper:
-    image: hardillb/traefik-avahi-helper
+  avahi-helper:
+    build: .
+    container_name: avahi_helper
+    restart: unless-stopped
+    hostname: avahi-helper
+
+    # for debian 13
+    network_mode: host
+    ipc: host
     security_opt:
       - apparmor:unconfined
+      - seccomp:unconfined
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW 
     volumes:
-        - /var/run/docker.sock:/var/run/docker.sock:ro
-        - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
-    restart: unless-stopped
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
 ```
 
 ## AppArmor
