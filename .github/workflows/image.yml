@@ -26,7 +26,7 @@ jobs:
           file: Dockerfile
           tags: flowfuse/mqtt-schema-agent:latest
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
       - name: Publish README.md to Docker Hub
         uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
