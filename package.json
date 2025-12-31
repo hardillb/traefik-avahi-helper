@@ -1,15 +1,16 @@
 {
   "name": "traefik-avahi-helper",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "dockerode": "^3.2.1",
-    "nodemon": "^2.0.4"
+    "dockerode": "^4.0.9",
+    "nodemon": "^3.1.11"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "node index.js",
+    "lint": "eslint -c eslint.config.mjs",
+    "lint:fix": "eslint -c eslint.config.mjs --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -17,5 +18,14 @@
     "avahi"
   ],
   "author": "hardillb@gmail.com",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "neostandard": "^0.12.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
