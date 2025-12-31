@@ -21,15 +21,18 @@ RUN npm ci --omit=dev
 RUN pip install --no-cache-dir mdns-publisher
 
 # --- Final Image ---
-FROM base
+FROM node:20-alpine3.18 AS ship
+LABEL maintainer="Ben Hardill <hardillb@gmail.com>"
+
+RUN apk add --no-cache \
+    dbus dbus-libs \
+    python3
+
 WORKDIR /usr/src/app
 
 # Copy app
 COPY index.js cname.py ./
 COPY --from=base /usr/src/app/node_modules ./node_modules
-#COPY --from=base /root/.local /root/.local
-
-# PATH for pip-User
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=base /usr/lib/python3.11/site-packages /usr/lib/python3.11/site-packages
 
 CMD ["node", "index.js"]
