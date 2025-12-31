@@ -39,8 +39,9 @@ If you prefer docker compose, here is a minimal one to get you started,
 ```yaml
 services:
   avahi-helper:
-    build: .
-    container_name: avahi_helper
+    image: hardillb/traefik-avahi-helper
+    # build: .
+    # container_name: traefik-avahi_helper
     restart: unless-stopped
     hostname: avahi-helper
 

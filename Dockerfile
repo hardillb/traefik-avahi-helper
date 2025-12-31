@@ -1,5 +1,5 @@
 # --- Base Image ---
-FROM python:3.11-alpine3.18 AS base
+FROM node:20-alpine3.18 AS base
 LABEL maintainer="Ben Hardill <hardillb@gmail.com>"
 
 # Systempakete inkl. Build-Tools und dbus-dev
@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     glib-dev \
     build-base \
     cmake ninja \
-    nodejs npm python3 py3-pip
+    python3-dev py3-pip
 
 # --- Build Stage ---
 WORKDIR /usr/src/app
@@ -29,7 +29,7 @@ COPY index.js cname.py ./
 COPY --from=base /usr/src/app/node_modules ./node_modules
 #COPY --from=base /root/.local /root/.local
 
-# PATH für pip-User
+# PATH for pip-User
 ENV PATH=/root/.local/bin:$PATH
 
 CMD ["node", "index.js"]
