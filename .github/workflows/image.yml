@@ -24,7 +24,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          tags: flowfuse/mqtt-schema-agent:latest
+          tags: hardillb/traefik-avahi-helper:latest
           push: true
           platforms: linux/amd64,linux/arm64
       - name: Publish README.md to Docker Hub
